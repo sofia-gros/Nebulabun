@@ -76,18 +76,23 @@ cd ../..
 ### 基本的な使用方法
 
 ```bash
-# デフォルトアプリを起動
+# デフォルトアプリを起動（現在は基本ウィンドウのみ）
 bun run start
 
-# HTMLファイルを開く
-bun run start --file ./your-app.html
+# HTMLファイルを開く（WebView2実装後に利用可能）
+bun run start --file ./example.html
 
-# URLを開く
-bun run start --url https://example.com
+# デバッグモードで起動
+bun run start --debug
 
-# 透過ウィンドウで起動
-bun run start --transparent --width 400 --height 300
+# ヘルプを表示
+bun run start --help
 ```
+
+### 現在の制限事項
+- WebView2の完全な実装がまだ完了していないため、HTMLコンテンツは表示されません
+- 現在は基本的なウィンドウ作成とFFI連携のテストが可能です
+- 透過機能やドラッグ機能は実装中です
 
 ### プログラムから使用
 
