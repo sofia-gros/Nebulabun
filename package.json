@@ -1,0 +1,42 @@
+{
+  "name": "nebulabun",
+  "version": "0.1.0",
+  "description": "軽量で多機能なWebViewアプリ作成フレームワーク",
+  "main": "cli/index.ts",
+  "type": "module",
+  "scripts": {
+    "setup": "./setup.bat",
+    "build": "./build.bat",
+    "build:rust": "cd app/rust && cargo build --release",
+    "build:cli": "bun build cli/index.ts --outdir dist --target bun",
+    "dev": "bun run cli/index.ts",
+    "start": "bun run cli/index.ts",
+    "clean": "cd app/rust && cargo clean && rmdir /s /q dist",
+    "check": "cargo --version && bun --version"
+  },
+  "bin": {
+    "nebulabun": "./cli/index.ts"
+  },
+  "keywords": [
+    "webview",
+    "electron-alternative",
+    "desktop-app",
+    "bun",
+    "rust",
+    "webview2"
+  ],
+  "author": "Nebulabun Team",
+  "license": "MIT",
+  "dependencies": {
+    "bun": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.0.0"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "os": [
+    "win32"
+  ]
+}
