@@ -1,7 +1,7 @@
 # Rust
 /app/rust/target/
 /app/rust/Cargo.lock
-.cursor/
+.cursor/*
 
 # Bun
 node_modules/
