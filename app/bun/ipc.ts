@@ -53,6 +53,12 @@ const lib = dlopen(libPath, {
     args: [],
     returns: FFIType.i32,
   },
+  
+  // HTMLファイル読み込み
+  load_html_file: {
+    args: [FFIType.cstring],
+    returns: FFIType.i32,
+  },
 });
 
 // WebViewクラス - Rust関数のラッパー
@@ -130,6 +136,15 @@ export class WebView {
   }
   
   /**
+   * HTMLファイルを読み込む
+   * @param filePath HTMLファイルのパス
+   */
+  loadHtmlFile(filePath: string): boolean {
+    const filePathPtr = Buffer.from(filePath + '\0', 'utf8');
+    return lib.symbols.load_html_file(filePathPtr) === 1;
+  }
+  
+  /**
    * ウィンドウハンドルを取得
    */
   getWindowHandle(): number {
@@ -171,6 +186,7 @@ export class WebViewManager {
     transparent?: boolean;
     html?: string;
     url?: string;
+    filePath?: string;
   }) {
     // ウィンドウを作成
     const success = this.webview.createWindow(
@@ -192,6 +208,8 @@ export class WebViewManager {
       this.webview.setHtmlContent(config.html);
     } else if (config.url) {
       this.webview.navigateToUrl(config.url);
+    } else if (config.filePath) {
+      this.webview.loadHtmlFile(config.filePath);
     }
     
     // メッセージループを開始（ブロッキング）

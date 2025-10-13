@@ -8,7 +8,7 @@ name = "nebulabun_webview"
 crate-type = ["cdylib"]
 
 [dependencies]
-webview2-com = "0.19"
+webview2-com = "0.38"
 windows = { version = "0.48", features = [
     "Win32_Foundation",
     "Win32_System_LibraryLoader",

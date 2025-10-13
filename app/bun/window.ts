@@ -168,8 +168,10 @@ export class NebulabunWindow {
    * ローカルHTMLファイルでアプリを起動
    */
   async startWithFile(filePath: string) {
-    const fileUrl = `file://${filePath.replace(/\\/g, '/')}`;
-    return this.startWithUrl(fileUrl);
+    return this.webviewManager.startApp({
+      ...this.config,
+      filePath
+    });
   }
   
   /**
