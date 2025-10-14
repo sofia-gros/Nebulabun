@@ -1,235 +1,92 @@
-import { WebView, WebViewManager } from "./ipc";
+import { WebView, WebViewManager } from './ipc';
 
-// ウィンドウ設定のインターフェース
+/**
+ * CLI引数から構築されるウィンドウ設定
+ * cli/index.ts で使用されるインターフェース
+ */
 export interface WindowConfig {
-  title?: string;
-  width?: number;
-  height?: number;
-  transparent?: boolean;
-  clickThrough?: boolean;
-  transparency?: number; // 0-255
-  resizable?: boolean;
-  alwaysOnTop?: boolean;
+    title: string;
+    width: number;
+    height: number;
+    transparent: boolean;
+    clickThrough: boolean;
+    transparency: number; // 0-255
 }
 
-// ドラッグ可能な要素の設定
-export interface DraggableConfig {
-  selector: string; // CSSセレクター
-  enabled: boolean;
-}
+/**
+ * CLIから使用される、高レベルなウィンドウ操作を提供するクラス
+ */
+class WindowWrapper {
+    private webview: WebView;
 
-// クリック可能な要素の設定
-export interface ClickableConfig {
-  selector: string; // CSSセレクター
-  enabled: boolean;
-}
-
-// Nebulabunウィンドウクラス
-export class NebulabunWindow {
-  private webviewManager: WebViewManager;
-  private config: WindowConfig;
-  private draggableElements: DraggableConfig[] = [];
-  private clickableElements: ClickableConfig[] = [];
-  
-  constructor(config: WindowConfig = {}) {
-    this.config = {
-      title: "Nebulabun App",
-      width: 800,
-      height: 600,
-      transparent: false,
-      clickThrough: false,
-      transparency: 255,
-      resizable: true,
-      alwaysOnTop: false,
-      ...config
-    };
-    
-    this.webviewManager = new WebViewManager();
-    this.setupEventHandlers();
-  }
-  
-  /**
-   * イベントハンドラーを設定
-   */
-  private setupEventHandlers() {
-    this.webviewManager.setEventHandlers({
-      onWindowCreated: () => {
-        console.log("ウィンドウが作成されました");
-        this.applyWindowSettings();
-      },
-      onNavigationCompleted: (url) => {
-        console.log(`ナビゲーション完了: ${url}`);
-        this.injectNebulabunScript();
-      },
-      onWindowClosed: () => {
-        console.log("ウィンドウが閉じられました");
-      }
-    });
-  }
-  
-  /**
-   * ウィンドウ設定を適用
-   */
-  private applyWindowSettings() {
-    const webview = this.webviewManager.getWebView();
-    
-    if (this.config.transparency !== undefined && this.config.transparency < 255) {
-      webview.setTransparency(this.config.transparency);
+    constructor(private config: WindowConfig) {
+        // WebViewManagerを初期化し、WebViewクラスのインスタンスを取得
+        const manager = new WebViewManager();
+        this.webview = manager.getWebView();
     }
-    
-    if (this.config.clickThrough) {
-      webview.setClickThrough(true);
+
+    /**
+     * ウィンドウを作成し、メッセージループを開始する
+     * @param loadFn コンテンツをロードする関数 (setHtmlContent, navigateToUrlなど)
+     */
+    private async startLoop(loadFn: (webview: WebView) => boolean): Promise<number> {
+        // 1. ウィンドウを作成 (透過設定はここで初期設定される)
+        // clickThrough や transparency < 255 の場合は強制的に透過モードを有効にする
+        const isTransparentInitial = this.config.transparent || this.config.clickThrough || this.config.transparency < 255;
+        
+        const success = this.webview.createWindow(
+            this.config.title,
+            this.config.width,
+            this.config.height,
+            isTransparentInitial
+        );
+
+        if (!success) {
+            console.error("ウィンドウの作成に失敗しました。FFIログを確認してください。");
+            return 1;
+        }
+
+        // 2. その他のウィンドウ設定を適用
+        // 透明度を設定
+        if (this.config.transparent || this.config.transparency < 255) {
+            this.webview.setTransparency(this.config.transparency);
+        }
+        // クリック透過を設定
+        if (this.config.clickThrough) {
+            this.webview.setClickThrough(true);
+        }
+
+        // 3. コンテンツをロード
+        if (!loadFn(this.webview)) {
+            console.error("コンテンツのロードに失敗しました。");
+            this.webview.closeWindow();
+            return 1;
+        }
+
+        // 4. メッセージループを開始（ブロッキング）
+        return this.webview.runMessageLoop();
     }
-  }
-  
-  /**
-   * Nebulabun固有のJavaScriptを注入
-   */
-  private injectNebulabunScript() {
-    const script = `
-      (function() {
-        // ドラッグ機能の実装
-        function enableDragging(selector) {
-          const elements = document.querySelectorAll(selector);
-          elements.forEach(element => {
-            element.style.cursor = 'move';
-            element.addEventListener('mousedown', (e) => {
-              // ウィンドウドラッグの開始をRustに通知
-              window.external.invoke('start_drag');
-            });
-          });
-        }
-        
-        // クリック機能の実装
-        function enableClicking(selector) {
-          const elements = document.querySelectorAll(selector);
-          elements.forEach(element => {
-            element.addEventListener('click', (e) => {
-              // クリックイベントをRustに通知
-              window.external.invoke('element_clicked', {
-                selector: selector,
-                elementId: element.id,
-                className: element.className
-              });
-            });
-          });
-        }
-        
-        // .draggable クラスの要素を自動的にドラッグ可能にする
-        enableDragging('.draggable');
-        
-        // .clickable クラスの要素を自動的にクリック可能にする
-        enableClicking('.clickable');
-        
-        // Nebulabun API をグローバルに公開
-        window.Nebulabun = {
-          setTransparency: (alpha) => {
-            window.external.invoke('set_transparency', alpha);
-          },
-          setClickThrough: (enabled) => {
-            window.external.invoke('set_click_through', enabled);
-          },
-          closeWindow: () => {
-            window.external.invoke('close_window');
-          },
-          executeScript: (script) => {
-            eval(script);
-          }
-        };
-        
-        console.log('Nebulabun initialized');
-      })();
-    `;
-    
-    this.webviewManager.getWebView().executeJavaScript(script);
-  }
-  
-  /**
-   * HTMLコンテンツでアプリを起動
-   */
-  async startWithHtml(html: string) {
-    return this.webviewManager.startApp({
-      ...this.config,
-      html
-    });
-  }
-  
-  /**
-   * URLでアプリを起動
-   */
-  async startWithUrl(url: string) {
-    return this.webviewManager.startApp({
-      ...this.config,
-      url
-    });
-  }
-  
-  /**
-   * ローカルHTMLファイルでアプリを起動
-   */
-  async startWithFile(filePath: string) {
-    return this.webviewManager.startApp({
-      ...this.config,
-      filePath
-    });
-  }
-  
-  /**
-   * ドラッグ可能な要素を追加
-   */
-  addDraggableElement(selector: string) {
-    this.draggableElements.push({ selector, enabled: true });
-    
-    // 既にウィンドウが作成されている場合は即座に適用
-    const script = `
-      document.querySelectorAll('${selector}').forEach(element => {
-        element.style.cursor = 'move';
-        element.classList.add('draggable');
-      });
-    `;
-    this.webviewManager.getWebView().executeJavaScript(script);
-  }
-  
-  /**
-   * クリック可能な要素を追加
-   */
-  addClickableElement(selector: string) {
-    this.clickableElements.push({ selector, enabled: true });
-    
-    // 既にウィンドウが作成されている場合は即座に適用
-    const script = `
-      document.querySelectorAll('${selector}').forEach(element => {
-        element.classList.add('clickable');
-      });
-    `;
-    this.webviewManager.getWebView().executeJavaScript(script);
-  }
-  
-  /**
-   * JavaScriptを実行
-   */
-  executeScript(script: string) {
-    return this.webviewManager.getWebView().executeJavaScript(script);
-  }
-  
-  /**
-   * ウィンドウを閉じる
-   */
-  close() {
-    return this.webviewManager.getWebView().closeWindow();
-  }
-  
-  /**
-   * WebViewインスタンスを取得
-   */
-  getWebView() {
-    return this.webviewManager.getWebView();
-  }
+
+    startWithHtml(html: string): Promise<number> {
+        return this.startLoop((w) => w.setHtmlContent(html));
+    }
+
+    startWithFile(filePath: string): Promise<number> {
+        return this.startLoop((w) => w.loadHtmlFile(filePath));
+    }
+
+    startWithUrl(url: string): Promise<number> {
+        return this.startLoop((w) => w.navigateToUrl(url));
+    }
+
+    close() {
+        this.webview.closeWindow();
+    }
 }
 
-// 便利な関数をエクスポート
-export function createWindow(config?: WindowConfig): NebulabunWindow {
-  return new NebulabunWindow(config);
+/**
+ * WindowWrapperのインスタンスを作成するファクトリ関数
+ */
+export function createWindow(config: WindowConfig): WindowWrapper {
+    return new WindowWrapper(config);
 }
-
-export default NebulabunWindow;

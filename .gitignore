@@ -1,6 +1,6 @@
-# Rust
-/app/rust/target/
-/app/rust/Cargo.lock
+# Zig
+app/zig/zig-out
+app/zig/.zig-cache
 
 # Bun
 node_modules/

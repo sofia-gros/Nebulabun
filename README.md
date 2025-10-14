@@ -16,14 +16,14 @@ This project is in its early development stage. The basic architecture and build
 
 ### ✅ Implemented
 - [x] Project structure design
-- [x] Rust + Bun FFI foundation
+- [x] Zig + Bun FFI foundation
 - [x] CLI interface
 - [x] Build system
 - [x] Basic window creation
 
 ### 🚧 In Progress
-- [ ] Full WebView2 implementation
-- [ ] HTML/CSS rendering
+- [ ] Full zig-webui integration
+- [ ] HTML/CSS rendering via zig-webui
 - [ ] JavaScript execution & API
 - [ ] Transparent window
 - [ ] Click-through (forward mouse events to underlying windows)
@@ -39,7 +39,7 @@ This project is in its early development stage. The basic architecture and build
 - [ ] Commit message guidelines
 
 ### 🤝 Contribution
-Contributions are welcome, especially from those familiar with WebView2 implementation, as the project is still in its very early stage.
+Contributions are welcome, especially from those familiar with zig-webui and WebView implementation, as the project is still in its very early stage.
 
 ---
 
@@ -48,7 +48,7 @@ Contributions are welcome, especially from those familiar with WebView2 implemen
 ### Requirements
 - Windows 10/11  
 - Bun (JavaScript runtime)  
-- Rust (Cargo)  
+- Zig (0.16.0 or later)  
 - WebView2 Runtime  
 
 ### Installation
@@ -72,9 +72,9 @@ bun run setup
 
 4. Build
 ```bash
-# Build Rust library
-cd app/rust
-cargo build --release
+# Build Zig library
+cd app/zig
+zig build dll
 cd ../..
 
 # Or future unified build
@@ -101,9 +101,9 @@ bun run start --help
 ```
 
 ### Current Limitations
-- HTML content is not rendered yet (WebView2 implementation incomplete)  
-- Only basic window creation and FFI tests are available  
-- Transparency and drag features are still under development  
+- HTML content rendering depends on zig-webui library implementation  
+- Basic window creation and FFI integration is available  
+- Transparency and drag features are implemented via zig-webui  
 
 ---
 
@@ -169,15 +169,15 @@ Nebulabun.closeWindow();
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   TypeScript    │    │      Rust       │    │    WebView2     │
-│     (Bun)       │◄──►│   (DLL/cdylib)  │◄──►│   (Windows)     │
+│   TypeScript    │    │      Zig        │    │    WebView2     │
+│     (Bun)       │◄──►│   (DLL/so)      │◄──►│   (Windows)     │
 │                 │    │                 │    │                 │
 │ - CLI Interface │    │ - Window Mgmt   │    │ - HTML/CSS/JS   │
-│ - FFI Bindings  │    │ - WebView2 API  │    │ - DOM Events    │
-│ - Event Handling│    │ - Win32 API     │    │ - Transparency  │
+│ - FFI Bindings  │    │ - zig-webui API │    │ - DOM Events    │
+│ - Event Handling│    │ - Cross-platform│    │ - Transparency  │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-1. **TypeScript (Bun)**: Provides CLI, user-facing interface, and calls Rust functions via FFI  
-2. **Rust (DLL)**: Handles WebView2 and Win32 APIs, manages windows  
+1. **TypeScript (Bun)**: Provides CLI, user-facing interface, and calls Zig functions via FFI  
+2. **Zig (DLL)**: Handles WebView functionality via zig-webui library, manages windows  
 3. **WebView2**: Renders HTML/CSS/JavaScript and manages DOM events  
