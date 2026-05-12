@@ -1,5 +1,5 @@
 /// Nebulabun API デモ
-/// 実行: bun run app/bun/demo.ts
+/// 実行: cd app/zig/zig-out/bin; bun run ../../../bun/demo.ts
 import { createWindow } from "./window";
 
 const html = `
@@ -42,20 +42,27 @@ const html = `
     <p>Bun + Zig + WebUI で動いています</p>
     <button class="clickable" onclick="Nebulabun.closeWindow()">閉じる</button>
     <script src="/webui.js"></script>
-    <script>
-        // webui.js を使った JavaScript API の例
-        document.title = "Nebulabun Demo";
-    </script>
 </body>
 </html>
 `;
 
 console.log("🚀 Nebulabun 起動中...");
-const window = createWindow({
+
+const win = createWindow({
     title: "Nebulabun Demo",
     width: 800,
     height: 600,
     transparent: false,
+    frameless: false,
+    resizable: true,
+    center: true,
 });
-window.startWithHtml(html);
+
+// startWithHtml はメッセージループを開始するので、その前にサイズ変更などはできない
+// （HTML表示中は run_message_loop がブロックする）
+console.log("✅ ウィンドウを作成しました");
+console.log("📐 API: setSize, setPosition, center, executeJS などが利用可能です");
+console.log("   (これらのAPIはメッセージループ中、JavaScript側からのコールバック経由で呼び出します)");
+
+win.startWithHtml(html);
 console.log("👋 ウィンドウを閉じました");
