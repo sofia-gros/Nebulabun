@@ -39,7 +39,7 @@ This project is in its early development stage. The basic architecture and build
 - [ ] Commit message guidelines
 
 ### 🤝 Contribution
-Contributions are welcome, especially from those familiar with zig-webui and WebView implementation, as the project is still in its very early stage.
+Contributions are welcome, especially from those familiar with zig and WebView implementation, as the project is still in its very early stage.
 
 ---
 
@@ -48,7 +48,7 @@ Contributions are welcome, especially from those familiar with zig-webui and Web
 ### Requirements
 - Windows 10/11  
 - Bun (JavaScript runtime)  
-- Zig (0.16.0 or later)  
+- Zig (0.16.0)  
 - WebView2 Runtime  
 
 ### Installation
