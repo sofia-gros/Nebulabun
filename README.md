@@ -20,10 +20,10 @@ This project is in its early development stage. The basic architecture and build
 - [x] CLI interface
 - [x] Build system
 - [x] Basic window creation
+- [x] HTML/CSS rendering via zig + webui
 
 ### 🚧 In Progress
 - [ ] Full zig + webui integration
-- [x] HTML/CSS rendering via zig + webui
 - [x] JavaScript execution & API
 - [ ] Transparent window
 - [ ] Click-through (forward mouse events to underlying windows)
