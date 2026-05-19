@@ -23,8 +23,8 @@ This project is in its early development stage. The basic architecture and build
 
 ### 🚧 In Progress
 - [ ] Full zig + webui integration
-- [ ] HTML/CSS rendering via zig-webui
-- [ ] JavaScript execution & API
+- [x] HTML/CSS rendering via zig + webui
+- [x] JavaScript execution & API
 - [ ] Transparent window
 - [ ] Click-through (forward mouse events to underlying windows)
 
