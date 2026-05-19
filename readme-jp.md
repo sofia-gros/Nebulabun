@@ -20,11 +20,11 @@ Electronと比較して非常に軽量なため、ゲームオーバーレイや
 - [x] CLIインターフェース
 - [x] ビルドシステム
 - [x] 基本ウィンドウ作成
+- [x] zig + webui経由のHTML/CSSレンダリング
 
 ### 🚧 進行中
-- [ ] zig-webuiの完全統合
-- [ ] zig-webui経由のHTML/CSSレンダリング
-- [ ] JavaScript実行とAPI
+- [ ] zig + webuiの完全統合
+- [x] JavaScript実行とAPI
 - [ ] 透過ウィンドウ
 - [ ] クリックスルー（マウスイベントを基盤ウィンドウへ転送）
 
