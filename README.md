@@ -22,7 +22,7 @@ This project is in its early development stage. The basic architecture and build
 - [x] Basic window creation
 
 ### 🚧 In Progress
-- [ ] Full zig-webui integration
+- [ ] Full zig + webui integration
 - [ ] HTML/CSS rendering via zig-webui
 - [ ] JavaScript execution & API
 - [ ] Transparent window
